@@ -38,8 +38,8 @@ const LoginPage = () => {
         <div className="w-full lg:w-1/2 p-4 sm:p-8 flex flex-col">
           {/* LOGO */}
           <div className="mb-4 flex items-center justify-start gap-2">
-            <ShipWheelIcon className="size-9 text-primary" />
-            <span className="text-3xl font-bold font-mono bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary tracking-wider">
+            <ShipWheelIcon className="size-9 text-cyan-300" />
+            <span className="text-3xl font-bold font-mono bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-cyan-500 tracking-wider">
               Samvad Live
             </span>
           </div>
@@ -55,7 +55,7 @@ const LoginPage = () => {
                 <div>
                   <h2 className="text-xl font-semibold">Welcome Back </h2>
                   <p className="text-sm opacity-70">
-                    Sign in to your account to continue funn.
+                    Sign in to your account to continue convervations.
                   </p>
                 </div>
                 <div className="flex flex-col gap-3">
@@ -104,7 +104,7 @@ const LoginPage = () => {
 
                 {/* Create Account */}
                 <button
-                  className="btn btn-primary w-full "
+                  className="btn btn-accent w-full "
                   type="submit"
                   disabled={isPending}
                 >
@@ -122,7 +122,7 @@ const LoginPage = () => {
                 <div className="text-center mt-4">
                   <p className="text-sm">
                     Don't have an accpount?{" "}
-                    <Link to="/signup" className="text-primary hover:underline">
+                    <Link to="/signup" className="text-cyan-300 hover:underline">
                       Create Account
                     </Link>
                   </p>
@@ -132,14 +132,14 @@ const LoginPage = () => {
           </div>
         </div>
         {/* Login - right side */}
-        <div className="hidden lg:flex w-full lg:w-1/2 bg-primary/10 items-center justify-center">
+        <div className="hidden lg:flex w-full lg:w-1/2 bg-slate-700/10 items-center justify-center">
           <div className="max-w-md p-8">
             <div className="relative aspect-square max-w-sm mx-auto">
-              <img src="/Video call-bro.png" alt="" className="w-full h-full" />
+              <img src="/Conversation-rafiki.png" alt="" className="w-full h-full" />
             </div>
             <div className="text-center space-y-3 mt-6">
               <h2 className="text-xl font-semibold">
-                Connect with you love ones.
+                Connect with new friend and make Conversation..
               </h2>
               <p className="opacity-70">Make conversations and be together. </p>
             </div>

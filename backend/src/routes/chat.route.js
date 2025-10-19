@@ -1,9 +1,10 @@
 import express from "express";
-import { protectRoute } from "../middleware/auth.middleware.js";
-import { getStreamToken } from "../controllers/chat.controller.js";
+import { getMessages } from "../controllers/chat.controller.js";
+import { uploadFile, getFileUrl } from "../controllers/file.controller.js"; // Import new controller
 
-const router= express.Router();
+const router = express.Router();
 
-router.get("/token", protectRoute ,getStreamToken)
+router.get("/:roomId", getMessages);
+router.post("/upload", uploadFile, getFileUrl); // New upload route
 
 export default router;

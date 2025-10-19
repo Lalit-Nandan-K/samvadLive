@@ -10,7 +10,6 @@ import {
   ShuffleIcon,
 } from "lucide-react";
 import { completeOnboarding } from "../lib/api";
-import { LANGUAGES } from "../constants";
 
 const OnboardingPage = () => {
   const { authUser } = useAuthUser();
@@ -116,57 +115,7 @@ const OnboardingPage = () => {
                 placeholder="Tell us about Yourself"
               />
             </div>
-            {/* Language */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Native Language */}
-              <div className="form-control">
-                <label className="label">
-                  <span className="label-text">Native Language</span>
-                </label>
-                <select
-                  name="nativeLanguage"
-                  value={formState.nativeLanguage}
-                  onChange={(e) =>
-                    setFormState({
-                      ...formState,
-                      nativeLanguage: e.target.value,
-                    })
-                  }
-                  className="select select-bordered w-full"
-                >
-                  <option value="">Select your native language</option>
-                  {LANGUAGES.map((lang) => (
-                    <option key={`native-${lang}`} value={lang.toLowerCase()}>
-                      {lang}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              {/* Learning Language */}
-              <div className="form-control">
-                <label className="label">
-                  <span className="label-text">Learning Language</span>
-                </label>
-                <select
-                  name="learningLanguage"
-                  value={formState.learningLanguage}
-                  onChange={(e) =>
-                    setFormState({
-                      ...formState,
-                      learningLanguage: e.target.value,
-                    })
-                  }
-                  className="select select-bordered w-full"
-                >
-                  <option value="">Select your learning language</option>
-                  {LANGUAGES.map((lang) => (
-                    <option key={`learning-${lang}`} value={lang.toLowerCase()}>
-                      {lang}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
+            
             {/* Location */}
             <div className="form-control">
               <label className="label">

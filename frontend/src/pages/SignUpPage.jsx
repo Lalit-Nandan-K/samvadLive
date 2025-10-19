@@ -36,8 +36,8 @@ const SignUpPage = () => {
         <div className="w-full lg:w-1/2 p-4 sm:p-8 flex flex-col">
           {/* LOGO */}
           <div className="mb-4 flex items-center justify-start gap-2">
-            <ShipWheelIcon className="size-9 text-primary" />
-            <span className="text-3xl font-bold font-mono bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary tracking-wider">
+            <ShipWheelIcon className="size-9 text-cyan-300" />
+            <span className="text-3xl font-bold font-mono bg-clip-text text-transparent bg-gradient-to-r from-cyan-300 to-cyan-500 tracking-wider">
               Samvad Live
             </span>
           </div>
@@ -55,7 +55,7 @@ const SignUpPage = () => {
                 <div>
                   <h2 className="text-xl font-semibold">Create an Account</h2>
                   <p className="text-sm opacity-70">
-                    Join Samvad Live for Funnn.
+                    Join Samvad Live to make new friends.
                   </p>
                 </div>
                 <div className="space-y-3">
@@ -131,12 +131,12 @@ const SignUpPage = () => {
                       />
                       <span className="text-xs leading-tight">
                         I trust{" "}
-                        <span className="text-primary hover:underline">
+                        <span className="text-accent hover:underline">
                           Lalit Nandan{" "}
                         </span>
                         <span>& his </span>
-                        <span className="text-primary hover:underline">
-                          Team
+                        <span className="text-accent hover:underline">
+                          Terms
                         </span>
                       </span>
                     </label>
@@ -144,7 +144,7 @@ const SignUpPage = () => {
                 </div>
 
                 {/* Create Account */}
-                <button className="btn btn-primary w-full " type="submit">
+                <button className="btn btn-accent w-full " type="submit">
                   {isPending ? (
                     <>
                       <span className="loading loading-spinner loading-xs"></span>
@@ -159,7 +159,7 @@ const SignUpPage = () => {
                 <div className="text-center mt-4">
                   <p className="text-sm ">
                     Already have an account?{" "}
-                    <Link to="/login" className="text-primary hover:underline">
+                    <Link to="/login" className="text-accent hover:underline">
                       Sign in
                     </Link>
                   </p>
@@ -169,16 +169,16 @@ const SignUpPage = () => {
           </div>
         </div>
         {/* SignUp - right side */}
-        <div className="hidden lg:flex w-full lg:w-1/2 bg-primary/10 items-center justify-center">
+        <div className="hidden lg:flex w-full lg:w-1/2 bg-slate-700/10 items-center justify-center">
           <div className="max-w-md p-8">
             <div className="relative aspect-square max-w-sm mx-auto">
-              <img src="/Video call-bro.png" alt="" className="w-full h-full" />
+              <img src="/Conversation-rafiki.png" alt="" className="w-full h-full" />
             </div>
             <div className="text-center space-y-3 mt-6">
               <h2 className="text-xl font-semibold">
-                Connect with you love ones.
+                Connect with new friend and make Conversation..
               </h2>
-              <p className="opacity-70">Make conversations and be together. </p>
+              <p className="opacity-70">Make conversations and be together </p>
             </div>
           </div>
         </div>

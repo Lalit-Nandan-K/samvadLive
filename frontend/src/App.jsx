@@ -2,7 +2,6 @@ import HomePage from "./pages/HomePage";
 import SignUpPage from "./pages/SignUpPage";
 import LoginPage from "./pages/LoginPage";
 import NotificationsPage from "./pages/NotificationsPage";
-import CallPage from "./pages/CallPage";
 import ChatPage from "./pages/ChatPage";
 import OnboardingPage from "./pages/OnboardingPage";
 
@@ -12,6 +11,7 @@ import PageLoader from "./components/PageLoader";
 import useAuthUser from "./hooks/useAuthUser";
 import Layout from "./components/Layout";
 import { useThemeStore } from "./store/useThemeStore";
+import FriendsPage from "./pages/FriendsPage";
 
 const App = () => {
   const { isLoading, authUser } = useAuthUser();
@@ -71,15 +71,18 @@ const App = () => {
           }
         />
         <Route
-          path="/call/:id"
+          path="/friends"
           element={
             isAuthenticated && isOnboarded ? (
-              <CallPage />
+              <Layout showSidebar={true}>
+                <FriendsPage />
+              </Layout>
             ) : (
               <Navigate to={!isAuthenticated ? "/login" : "/onboarding"} />
             )
           }
         />
+        
         <Route
           path="/chat/:id"
           element={

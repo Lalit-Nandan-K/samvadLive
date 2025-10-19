@@ -19,7 +19,9 @@
     "express": "^4.21.0",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.13.2",
+    "multer": "^2.0.2",
     "samvad-live": "file:..",
+    "socket.io": "^4.8.1",
     "stream-chat": "^8.60.0"
   },
   "devDependencies": {

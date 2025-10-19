@@ -1,99 +1,126 @@
-import { useEffect, useState } from "react";
-import { useParams } from "react-router"
+// /pages/ChatPage.jsx
+import { useState, useRef } from "react";
+import { useParams } from "react-router";
 import useAuthUser from "../hooks/useAuthUser";
-import { useQuery } from "@tanstack/react-query";
-
-import {Channel , ChannelHeader , Chat , MessageInput , MessageList , Thread , Window} from "stream-chat-react";
-import { StreamChat } from "stream-chat";
-import toast from "react-hot-toast";
+import useChat from "../hooks/useChat";
 import ChatLoader from "../components/ChatLoader";
-import { getStreamToken } from "../lib/api";
-import CallButton from "../components/CallButton";
-
-const STREAM_API_KEY=import.meta.env.VITE_STREAM_API_KEY;
+import ChatMessages from "../components/chat/ChatMessages";
+import TypingIndicator from "../components/chat/TypingIndicator";
+import ReplyBar from "../components/chat/ReplyBar";
+import ChatInput from "../components/chat/ChatInput";
+import toast from "react-hot-toast";
 
 const ChatPage = () => {
-  const {id:targetUserId} = useParams();
+  const { id: targetUserId } = useParams();
+  const { authUser } = useAuthUser();
+  const [newMessage, setNewMessage] = useState("");
+  const [replyingTo, setReplyingTo] = useState(null);
+  const [showReactions, setShowReactions] = useState(null);
+  const inputRef = useRef(null);
 
-  const [chatClient , setChatClient] = useState(null);
-  const [channel , setChannel] = useState(null);
-  const [loading , setLoading] = useState(true);
+  const { messages, setMessages, loading, typingUsers, messagesEndRef, socket, roomId, typingTimeout } = useChat(authUser, targetUserId);
 
-  const {authUser}= useAuthUser();
+  const cancelReply = () => setReplyingTo(null);
 
-  const {data:tokenData}= useQuery({
-    queryKey:["streamToken"],
-    queryFn: getStreamToken,
-    enabled: !!authUser // this will run only authUser is available
-  });
+  const handleReply = (msg) => {
+    setReplyingTo(msg);
+    requestAnimationFrame(() => inputRef.current?.focus());
+  };
 
-  useEffect(()=>{
-    const initChat = async () =>{
-      if(!tokenData?.token || !authUser) return ;
+  const handleInputChange = (e) => {
+    const text = e.target.value;
+    setNewMessage(text);
 
-      try{
-        console.log("Initializing stream chat client...");
+    if (text.length > 0) socket.emit("typing_start", { roomId, senderId: authUser._id });
 
-        const client= StreamChat.getInstance(STREAM_API_KEY);
-        await client.connectUser({
-          id:authUser._id,
-          name:authUser.fullName,
-          image:authUser.profilePic,
-        },tokenData.token)
+    if (typingTimeout.current) clearTimeout(typingTimeout.current);
+    typingTimeout.current = setTimeout(() => {
+      socket.emit("typing_stop", { roomId, senderId: authUser._id });
+    }, 3000);
+  };
 
-        // This will create a unique channel for chating either the sender or reciever start conversation.
-        const channelId= [authUser._id,targetUserId].sort().join("-");
+  const handleKeyDown = (e) => { if (e.key === "Enter") sendMessage(); };
 
-        const currChannel = client.channel("messaging",channelId,{
-          members:[authUser._id,targetUserId],
-        });
+  const sendMessage = () => {
+    if (!newMessage.trim() || !roomId || !authUser) return;
 
-        await currChannel.watch();
+    socket.emit("send_message", {
+      roomId,
+      senderId: authUser._id,
+      text: newMessage,
+      replyTo: replyingTo?._id || null
+    });
 
-        setChatClient(client);
-        setChannel(currChannel);
+    setNewMessage("");
+    cancelReply();
+    socket.emit("typing_stop", { roomId, senderId: authUser._id });
+    if (typingTimeout.current) clearTimeout(typingTimeout.current);
+  };
 
-      }catch(error){
-        console.error("Error initializing chat:",error);
-        toast.error("Could not connect to chat. Please try again");
-      }finally{
-        setLoading(false);
-      }
-    } 
-    initChat()
-  },[tokenData , authUser, targetUserId]);
+  const handleFileChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
 
-  const handleVideoCall = () =>{
-    if(channel){
-      const callUrl = `${window.location.origin}/call/${channel.id}`;
+    const formData = new FormData();
+    formData.append("file", file);
 
-      channel.sendMessage({
-        text:`Click the given Link & Join the video call: ${callUrl}`,
+    try {
+      const uploadRes = await axios.post("/chat/upload", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
       });
 
-      toast.success("Link sent Successfully");
+      const { fileUrl } = uploadRes.data;
+
+      socket.emit("send_message", {
+        roomId,
+        senderId: authUser._id,
+        text: file.name,
+        fileUrl,
+        replyTo: replyingTo?._id || null,
+      });
+
+      toast.success("File sent!");
+      cancelReply();
+    } catch (err) {
+      toast.error("File upload failed.");
+      console.error(err);
     }
   };
 
-  if(loading || !chatClient || !channel) return <ChatLoader/>;
+  const sendReaction = (messageId, emoji) => {
+    socket.emit("add_reaction", { messageId, userId: authUser._id, emoji, roomId });
+    setShowReactions(null);
+  };
+
+  if (loading) return <ChatLoader />;
 
   return (
-    <div className="h-[93vh]">
-     <Chat client={chatClient} >
-      <Channel channel={channel}>
-        <div className="w-full relative">
-          <CallButton handleVideoCall={handleVideoCall}/>
-          <Window>
-            <ChannelHeader/>
-            <MessageList/>
-            <MessageInput focus/>
-          </Window>
-        </div>
-        <Thread/>
-      </Channel>
-     </Chat>
-    </div>
-  )
-}
+    <div className="h-[93vh] flex flex-col">
+      <ChatMessages
+        messages={messages}
+        authUser={authUser}
+        handleReply={handleReply}
+        showReactions={showReactions}
+        setShowReactions={setShowReactions}
+        sendReaction={sendReaction}
+        messagesEndRef={messagesEndRef}
+      />
 
-export default ChatPage
+      <TypingIndicator typingUsers={typingUsers} />
+
+      <ReplyBar replyingTo={replyingTo} cancelReply={cancelReply} />
+
+      <ChatInput
+        newMessage={newMessage}
+        setNewMessage={setNewMessage}
+        sendMessage={sendMessage}
+        handleInputChange={handleInputChange}
+        handleKeyDown={handleKeyDown}
+        handleFileChange={handleFileChange}
+        inputRef={inputRef}
+      />
+    </div>
+  );
+};
+
+export default ChatPage;
