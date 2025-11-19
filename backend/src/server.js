@@ -17,17 +17,25 @@ const PORT = process.env.PORT || 5001;
 const __dirname = path.resolve();
 
 // ------------------- Middleware -------------------
-app.use(
-  cors({
-    origin: [
-      "http://localhost:5173",
-      "http://localhost:3000",
-      process.env.FRONTEND_URL
-    ],
-    credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE"]
-  })
-);
+const allowedOrigins = [
+  "http://localhost:5173",               // local frontend
+  "http://localhost:3000",               // optional local port
+  process.env.FRONTEND_URL               // production frontend (Vercel)
+];
+
+app.use(cors({
+  origin: (origin, callback) => {
+    // allow requests with no origin (like Postman) or from allowed origins
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("CORS not allowed"));
+    }
+  },
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE"]
+}));
+
 
 app.use(express.json());
 app.use(cookieParser());
@@ -44,15 +52,12 @@ app.use("/api/chat", chatRoutes);
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: [
-      "http://localhost:5173",
-      "http://localhost:3000",
-      process.env.FRONTEND_URL
-    ],
+    origin: allowedOrigins,
     methods: ["GET", "POST"],
-    credentials: true,
-  },
+    credentials: true
+  }
 });
+
 
 
 // Initialize chat socket
