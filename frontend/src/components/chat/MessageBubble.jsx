@@ -1,8 +1,10 @@
 // /components/chat/MessageBubble.jsx
 import { Paperclip, Reply } from "lucide-react";
 
-const BACKEND_URL = "http://localhost:5001";
-
+const BACKEND_URL =
+  import.meta.env.MODE === "development"
+    ? "http://localhost:5001"
+    : import.meta.env.VITE_BACKEND_URL;
 
 
 const availableEmojis = ["👍", "❤️", "😂", "😡", "😢"];

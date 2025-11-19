@@ -4,8 +4,16 @@ import { io } from "socket.io-client";
 import axios from "../lib/axios.js";
 import toast from "react-hot-toast";
 
-const BACKEND_URL = "http://localhost:5001";
-const socket = io(BACKEND_URL);
+const SOCKET_URL =
+  import.meta.env.MODE === "development"
+    ? "http://localhost:5001"
+    : import.meta.env.VITE_SOCKET_URL;
+
+const socket = io(SOCKET_URL, {
+  withCredentials: true,
+});
+
+
 
 export default function useChat(authUser, targetUserId) {
   const [messages, setMessages] = useState([]);

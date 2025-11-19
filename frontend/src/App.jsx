@@ -4,7 +4,6 @@ import LoginPage from "./pages/LoginPage";
 import NotificationsPage from "./pages/NotificationsPage";
 import ChatPage from "./pages/ChatPage";
 import OnboardingPage from "./pages/OnboardingPage";
-
 import { Navigate, Route, Routes } from "react-router";
 import { Toaster } from "react-hot-toast";
 import PageLoader from "./components/PageLoader";
