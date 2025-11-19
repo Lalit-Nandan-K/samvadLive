@@ -25,11 +25,12 @@ const allowedOrigins = [
 
 app.use(cors({
   origin: (origin, callback) => {
-    // allow requests with no origin (like Postman) or from allowed origins
+    // allow requests with no origin (Postman, server checks) or from allowed origins
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      callback(new Error("CORS not allowed"));
+      console.log("Blocked CORS request from:", origin); // log it
+      callback(null, false); // reject without crashing
     }
   },
   credentials: true,
