@@ -21,21 +21,24 @@ const __dirname = path.resolve();
 const allowedOrigins = [
   "http://localhost:5173",               // local frontend
   "http://localhost:3000",               // optional local port
-  process.env.FRONTEND_URL               // production frontend (Vercel)
+  "https://samvad-live19.vercel.app",    // production frontend (Vercel)
 ];
 
 app.use(cors({
-  origin: (origin, callback) => {
-    // allow requests with no origin (Postman, server checks) or from allowed origins
-    if (!origin || allowedOrigins.includes(origin)) {
+  origin: function(origin, callback) {
+    // Allow requests with no origin (mobile apps, Postman, etc.)
+    if (!origin) return callback(null, true);
+    
+    if (allowedOrigins.indexOf(origin) !== -1) {
       callback(null, true);
     } else {
-      console.log("Blocked CORS request from:", origin); // log it
-      callback(null, false); // reject without crashing
+      console.log("❌ Blocked CORS request from:", origin);
+      callback(new Error('Not allowed by CORS'));
     }
   },
-  credentials: true,
-  methods: ["GET", "POST", "PUT", "DELETE"]
+  credentials: true, // ✅ Very important for cookies
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  allowedHeaders: ["Content-Type", "Authorization"]
 }));
 
 
