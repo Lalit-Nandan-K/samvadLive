@@ -1,29 +1,86 @@
+// backend/src/controllers/file.controller.js
 import multer from "multer";
-import path from "path"; // Needed to extract file extension
+import path from "path";
+import fs from "fs";
 
-// 1. Configure Storage
+// Ensure uploads directory exists
+const uploadsDir = "uploads/";
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
+
+// Configure Storage
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    // Ensure you have an 'uploads' directory at your server root
-    cb(null, "uploads/");
+    cb(null, uploadsDir);
   },
   filename: (req, file, cb) => {
-    // Create unique filename: timestamp + original extension
+    // Create unique filename with original extension
     const ext = path.extname(file.originalname);
-    cb(null, Date.now() + ext);
+    const uniqueName = Date.now() + "-" + Math.round(Math.random() * 1E9) + ext;
+    cb(null, uniqueName);
   },
 });
 
-const upload = multer({ storage });
+// File filter to prevent certain file types
+const fileFilter = (req, file, cb) => {
+  // Allow images and common file types
+  const allowedTypes = /jpeg|jpg|png|gif|pdf|doc|docx|txt|webp/;
+  const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
+  const mimetype = allowedTypes.test(file.mimetype);
 
-// 2. Middleware to handle single file upload (name 'file')
+  if (mimetype && extname) {
+    return cb(null, true);
+  } else {
+    cb(new Error("Invalid file type. Only images and documents are allowed."));
+  }
+};
+
+// Configure multer with file size limit
+const upload = multer({
+  storage: storage,
+  limits: {
+    fileSize: 10 * 1024 * 1024, // 10MB limit
+  },
+  fileFilter: fileFilter,
+});
+
+// Middleware to handle single file upload
 export const uploadFile = upload.single("file");
 
-// 3. Controller function to return the public URL
+// Controller function to return the public URL
 export const getFileUrl = (req, res) => {
-  if (!req.file) {
-    return res.status(400).json({ message: "No file uploaded" });
+  try {
+    if (!req.file) {
+      return res.status(400).json({ message: "No file uploaded" });
+    }
+    
+    // Return the file URL
+    const fileUrl = `/uploads/${req.file.filename}`;
+    
+    console.log("✅ File uploaded successfully:", fileUrl);
+    
+    res.status(200).json({ 
+      fileUrl,
+      filename: req.file.filename,
+      originalname: req.file.originalname,
+      size: req.file.size
+    });
+  } catch (error) {
+    console.error("❌ Error in getFileUrl:", error);
+    res.status(500).json({ message: "Error processing file upload" });
   }
-  // The path where the file is publicly accessible
-  res.status(200).json({ fileUrl: `/uploads/${req.file.filename}` });
+};
+
+// Error handling middleware for multer
+export const handleMulterError = (err, req, res, next) => {
+  if (err instanceof multer.MulterError) {
+    if (err.code === "LIMIT_FILE_SIZE") {
+      return res.status(400).json({ message: "File is too large. Max size is 10MB." });
+    }
+    return res.status(400).json({ message: err.message });
+  } else if (err) {
+    return res.status(400).json({ message: err.message });
+  }
+  next();
 };
