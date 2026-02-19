@@ -57,35 +57,40 @@ const ChatPage = () => {
     if (typingTimeout.current) clearTimeout(typingTimeout.current);
   };
 
-  const handleFileChange = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
+const handleFileChange = async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
 
-    const formData = new FormData();
-    formData.append("file", file);
+  console.log("Selected file:", file);   // 🧪 check file select
 
-    try {
-      const uploadRes = await axios.post("/chat/upload", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
+  try {
+    const formData = new FormData();
+    formData.append("file", file);
 
-      const { fileUrl } = uploadRes.data;
+    console.log("Uploading file...");   // 🧪 before upload
 
-      socket.emit("send_message", {
-        roomId,
-        senderId: authUser._id,
-        text: file.name,
-        fileUrl,
-        replyTo: replyingTo?._id || null,
-      });
+    const res = await axios.post("/chat/upload", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
 
-      toast.success("File sent!");
-      cancelReply();
-    } catch (err) {
-      toast.error("File upload failed.");
-      console.error(err);
-    }
-  };
+    console.log("UPLOAD RESPONSE:", res.data);  // 🧪 backend response
+
+    const fileUrl = res.data.fileUrl;
+    console.log("File URL received:", fileUrl); // 🧪 url check
+
+    socket.emit("send_message", {
+      roomId,
+      senderId: authUser._id,
+      fileUrl: fileUrl,
+    });
+
+    console.log("Message emitted to socket");  // 🧪 socket check
+
+  } catch (err) {
+    console.error("UPLOAD ERROR:", err);
+  }
+};
+
 
   const sendReaction = (messageId, emoji) => {
     socket.emit("add_reaction", { messageId, userId: authUser._id, emoji, roomId });

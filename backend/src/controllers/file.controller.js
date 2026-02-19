@@ -1,86 +1,66 @@
-// backend/src/controllers/file.controller.js
 import multer from "multer";
-import path from "path";
-import fs from "fs";
+import { CloudinaryStorage } from "multer-storage-cloudinary";
+import cloudinary from "../lib/cloudinary.js";
 
-// Ensure uploads directory exists
-const uploadsDir = "uploads/";
-if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir, { recursive: true });
-}
+// 🔥 Cloudinary storage
+const storage = new CloudinaryStorage({
+  cloudinary,
+  params: async (req, file) => {
+    let resourceType = "auto";
 
-// Configure Storage
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, uploadsDir);
-  },
-  filename: (req, file, cb) => {
-    // Create unique filename with original extension
-    const ext = path.extname(file.originalname);
-    const uniqueName = Date.now() + "-" + Math.round(Math.random() * 1E9) + ext;
-    cb(null, uniqueName);
+    if (
+      file.mimetype === "application/pdf" ||
+      file.mimetype.includes("word") ||
+      file.mimetype.includes("text")
+    ) {
+      resourceType = "raw";
+    }
+
+    return {
+      folder: "chat-app-samvad",
+      resource_type: resourceType,
+
+      // ⭐ IMPORTANT FIX FOR PDF PREVIEW
+      public_id: file.originalname,
+      use_filename: true,
+      unique_filename: false,
+
+      access_mode: "public",
+    };
   },
 });
 
-// File filter to prevent certain file types
-const fileFilter = (req, file, cb) => {
-  // Allow images and common file types
-  const allowedTypes = /jpeg|jpg|png|gif|pdf|doc|docx|txt|webp/;
-  const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
-  const mimetype = allowedTypes.test(file.mimetype);
-
-  if (mimetype && extname) {
-    return cb(null, true);
-  } else {
-    cb(new Error("Invalid file type. Only images and documents are allowed."));
-  }
-};
-
-// Configure multer with file size limit
+// multer
 const upload = multer({
-  storage: storage,
-  limits: {
-    fileSize: 10 * 1024 * 1024, // 10MB limit
-  },
-  fileFilter: fileFilter,
+  storage,
+  limits: { fileSize: 10 * 1024 * 1024 },
 });
 
-// Middleware to handle single file upload
 export const uploadFile = upload.single("file");
 
-// Controller function to return the public URL
+// return url
 export const getFileUrl = (req, res) => {
-  try {
-    if (!req.file) {
-      return res.status(400).json({ message: "No file uploaded" });
-    }
-    
-    // Return the file URL
-    const fileUrl = `/uploads/${req.file.filename}`;
-    
-    console.log("✅ File uploaded successfully:", fileUrl);
-    
-    res.status(200).json({ 
-      fileUrl,
-      filename: req.file.filename,
-      originalname: req.file.originalname,
-      size: req.file.size
-    });
-  } catch (error) {
-    console.error("❌ Error in getFileUrl:", error);
-    res.status(500).json({ message: "Error processing file upload" });
+  console.log("UPLOAD RESPONSE FILE:", req.file);
+
+  if (!req.file) {
+    return res.status(400).json({ message: "No file uploaded" });
   }
+
+  res.status(200).json({
+    fileUrl: req.file.path,
+  });
 };
 
-// Error handling middleware for multer
 export const handleMulterError = (err, req, res, next) => {
-  if (err instanceof multer.MulterError) {
-    if (err.code === "LIMIT_FILE_SIZE") {
-      return res.status(400).json({ message: "File is too large. Max size is 10MB." });
-    }
-    return res.status(400).json({ message: err.message });
-  } else if (err) {
-    return res.status(400).json({ message: err.message });
+  console.error("Multer error:", err);
+
+  if (err.code === "LIMIT_FILE_SIZE") {
+    return res.status(400).json({
+      message: "File too large (max 10MB)",
+    });
   }
-  next();
+
+  return res.status(500).json({
+    message: err.message || "Upload failed",
+  });
 };

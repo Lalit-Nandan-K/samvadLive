@@ -88,3 +88,4 @@ export default function useChat(authUser, targetUserId) {
 
   return { messages, setMessages, loading, typingUsers, messagesEndRef, socket, roomId, typingTimeout };
 }
+

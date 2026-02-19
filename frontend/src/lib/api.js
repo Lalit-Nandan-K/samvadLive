@@ -2,7 +2,7 @@ import axios from "./axios.js"; // default import
 
 export const getAuthUser = async () => {
   try {
-    const response = await axios.get("/auth/me"); // ✅ use axios, not axiosInstance
+    const response = await axios.get("/auth/me"); 
     return response.data;
   } catch (error) {
     console.error("Error in getAuthUser", error);

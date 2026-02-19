@@ -40,14 +40,24 @@ export default function MessageBubble({ msg, authUser, handleReply, showReaction
           onDoubleClick={() => setShowReactions(msg._id)}
         >
           {msg.fileUrl && msg.fileUrl.match(/\.(jpeg|jpg|png|gif|webp)$/i) ? (
-            <img src={`${BACKEND_URL}${msg.fileUrl}`} alt="Sent file" className="rounded-lg max-w-[250px] max-h-[250px] object-cover border border-gray-200" />
-          ) : msg.fileUrl ? (
-            <a href={`${BACKEND_URL}${msg.fileUrl}`} target="_blank" rel="noopener noreferrer" className="block text-sm bg-blue-100 text-blue-800 px-3 py-1.5 rounded-md hover:bg-blue-200 transition">
-              ⬇️ {msg.text || "Download File"}
-            </a>
-          ) : (
-            <p className="whitespace-pre-wrap break-words">{msg.text}</p>
-          )}
+  <img
+    src={msg.fileUrl}
+    alt="Sent file"
+    className="rounded-lg max-w-[250px] max-h-[250px] object-cover border border-gray-200"
+  />
+) : msg.fileUrl ? (
+  <a
+    href={msg.fileUrl}
+    target="_blank"
+    rel="noopener noreferrer"
+    className="block text-sm bg-blue-100 text-blue-800 px-3 py-1.5 rounded-md"
+  >
+    ⬇️ Download File
+  </a>
+) : (
+  <p>{msg.text}</p>
+)}
+
 
           {showReactions === msg._id && (
             <div className={`absolute -top-10 bg-white border shadow-md rounded-full flex gap-1 p-1 ${isOwn ? "right-0" : "left-0"}`}>
