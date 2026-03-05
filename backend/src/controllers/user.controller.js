@@ -49,7 +49,7 @@ export async function sendFriendRequest(req, res) {
     }
 
     // check if user is already friends
-    if (recipient.friends.includes(myId)) {
+    if (recipient.friends.some((friendId) => friendId.toString() === myId)) {
       return res
         .status(400)
         .json({ message: "You are already friends with yhis user" });

@@ -1,8 +1,9 @@
+import crypto from "crypto";
 import multer from "multer";
 import { CloudinaryStorage } from "multer-storage-cloudinary";
 import cloudinary from "../lib/cloudinary.js";
+import { canUserAccessRoom } from "../lib/chat-room.js";
 
-// 🔥 Cloudinary storage
 const storage = new CloudinaryStorage({
   cloudinary,
   params: async (req, file) => {
@@ -19,18 +20,14 @@ const storage = new CloudinaryStorage({
     return {
       folder: "chat-app-samvad",
       resource_type: resourceType,
-
-      // ⭐ IMPORTANT FIX FOR PDF PREVIEW
-      public_id: file.originalname,
-      use_filename: true,
-      unique_filename: false,
-
+      public_id: `${Date.now()}-${crypto.randomUUID()}`,
+      use_filename: false,
+      unique_filename: true,
       access_mode: "public",
     };
   },
 });
 
-// multer
 const upload = multer({
   storage,
   limits: { fileSize: 10 * 1024 * 1024 },
@@ -38,15 +35,19 @@ const upload = multer({
 
 export const uploadFile = upload.single("file");
 
-// return url
 export const getFileUrl = (req, res) => {
   console.log("UPLOAD RESPONSE FILE:", req.file);
+  const { roomId } = req.params;
+
+  if (!canUserAccessRoom(req.user, roomId)) {
+    return res.status(403).json({ message: "Forbidden" });
+  }
 
   if (!req.file) {
     return res.status(400).json({ message: "No file uploaded" });
   }
 
-  res.status(200).json({
+  return res.status(200).json({
     fileUrl: req.file.path,
   });
 };

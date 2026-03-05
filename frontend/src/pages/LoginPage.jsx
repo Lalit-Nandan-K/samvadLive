@@ -30,10 +30,10 @@ const LoginPage = () => {
 
   return (
     <div
-      className="h-screen flex items-center justify-center p-4 sm:p-6 md:p-8"
+      className="h-screen flex items-center justify-center p-4 sm:p-6 md:p-8 bg-gradient-to-br from-base-200 to-base-300"
       data-theme="forest"
     >
-      <div className="border border-primary/25 flex flex-col lg:flex-row w-full max-w-5xl mx-auto bg-base-100 rounded-xl shadow-lg overflow-hidden">
+      <div className="border border-primary/20 flex flex-col lg:flex-row w-full max-w-5xl mx-auto bg-base-100 rounded-2xl shadow-[0_35px_60px_-15px_rgba(0,0,0,0.5)] overflow-hidden">
         {/* Login - left side */}
         <div className="w-full lg:w-1/2 p-4 sm:p-8 flex flex-col">
           {/* LOGO */}
@@ -96,7 +96,7 @@ const LoginPage = () => {
                       }
                       required
                     />
-                    <p className="text=xs opacity-70 mt-1">
+                    <p className="text-xs opacity-70 mt-1">
                       Password must atleast of 6 characters long
                     </p>
                   </div>

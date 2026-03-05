@@ -11,6 +11,7 @@ const SOCKET_URL =
 
 const socket = io(SOCKET_URL, {
   withCredentials: true,
+  autoConnect: false,
 });
 
 
@@ -30,6 +31,9 @@ export default function useChat(authUser, targetUserId) {
   // Fetch messages & setup socket listeners
   useEffect(() => {
     if (!authUser || !targetUserId || !roomId) return;
+    setLoading(true);
+    setMessages([]);
+    setTypingUsers({});
 
     const fetchMessages = async () => {
       try {
@@ -44,7 +48,17 @@ export default function useChat(authUser, targetUserId) {
     };
 
     fetchMessages();
-    socket.emit("join_room", roomId);
+    const joinCurrentRoom = () => {
+      socket.emit("join_room", roomId);
+    };
+
+    socket.on("connect", joinCurrentRoom);
+
+    if (!socket.connected) {
+      socket.connect();
+    } else {
+      joinCurrentRoom();
+    }
 
     const handleReceiveMessage = (msg) =>
       setMessages((prev) => (prev.some((m) => m._id === msg._id) ? prev : [...prev, msg]));
@@ -70,12 +84,14 @@ export default function useChat(authUser, targetUserId) {
     socket.on("typing_start", handleTypingStart);
     socket.on("typing_stop", handleTypingStop);
 
+    const timeoutId = typingTimeout.current;
     return () => {
+      socket.off("connect", joinCurrentRoom);
       socket.off("receive_message", handleReceiveMessage);
       socket.off("message_updated", handleMessageUpdated);
       socket.off("typing_start", handleTypingStart);
       socket.off("typing_stop", handleTypingStop);
-      if (typingTimeout.current) clearTimeout(typingTimeout.current);
+      if (timeoutId) clearTimeout(timeoutId);
     };
   }, [authUser, targetUserId, roomId]);
 

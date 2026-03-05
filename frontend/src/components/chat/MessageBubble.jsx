@@ -1,16 +1,11 @@
 // /components/chat/MessageBubble.jsx
-import { Paperclip, Reply } from "lucide-react";
-
-const BACKEND_URL =
-  import.meta.env.MODE === "development"
-    ? "http://localhost:5001"
-    : import.meta.env.VITE_BACKEND_URL;
+import { Reply } from "lucide-react";
 
 
 const availableEmojis = ["👍", "❤️", "😂", "😡", "😢"];
 
 export default function MessageBubble({ msg, authUser, handleReply, showReactions, setShowReactions, sendReaction, messages }) {
-  const isOwn = msg.senderId === authUser._id;
+  const isOwn = String(msg.senderId) === String(authUser._id);
   const repliedMsg = messages.find((m) => m._id === msg.replyTo);
 
   return (
@@ -40,23 +35,23 @@ export default function MessageBubble({ msg, authUser, handleReply, showReaction
           onDoubleClick={() => setShowReactions(msg._id)}
         >
           {msg.fileUrl && msg.fileUrl.match(/\.(jpeg|jpg|png|gif|webp)$/i) ? (
-  <img
-    src={msg.fileUrl}
-    alt="Sent file"
-    className="rounded-lg max-w-[250px] max-h-[250px] object-cover border border-gray-200"
-  />
-) : msg.fileUrl ? (
-  <a
-    href={msg.fileUrl}
-    target="_blank"
-    rel="noopener noreferrer"
-    className="block text-sm bg-blue-100 text-blue-800 px-3 py-1.5 rounded-md"
-  >
-    ⬇️ Download File
-  </a>
-) : (
-  <p>{msg.text}</p>
-)}
+            <img
+              src={msg.fileUrl}
+              alt="Sent file"
+              className="rounded-lg max-w-[250px] max-h-[250px] object-cover border border-gray-200"
+            />
+          ) : msg.fileUrl ? (
+            <a
+              href={msg.fileUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block text-sm bg-blue-100 text-blue-800 px-3 py-1.5 rounded-md"
+            >
+              ⬇️ Download File
+            </a>
+          ) : (
+            <p>{msg.text}</p>
+          )}
 
 
           {showReactions === msg._id && (

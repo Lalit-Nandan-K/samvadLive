@@ -5,11 +5,12 @@ import toast from "react-hot-toast";
 import {
   CameraIcon,
   LoaderIcon,
+  LogOut,
   MapPinIcon,
   ShipWheelIcon,
   ShuffleIcon,
 } from "lucide-react";
-import { completeOnboarding } from "../lib/api";
+import { completeOnboarding, logout } from "../lib/api";
 
 const OnboardingPage = () => {
   const { authUser } = useAuthUser();
@@ -19,7 +20,7 @@ const OnboardingPage = () => {
     fullName: authUser?.fullName || "",
     bio: authUser?.bio || "",
     location: authUser?.location || "",
-    profilePic: authUser?.profilePic || "",
+    profilePic: authUser?.profilePic || ""
   });
 
   //Similar to login and signup we can also create custom hook for this.   
@@ -29,10 +30,20 @@ const OnboardingPage = () => {
       toast.success("Profile onboarded successfully");
       queryClient.invalidateQueries({ queryKey: ["authUser"] });
     },
-    onError:(error)=>{
+    onError: (error) => {
       toast.error(error.response.data.message);
     }
   });
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      queryClient.invalidateQueries({ queryKey: ["authUser"] });
+      toast.success("Logged out successfully");
+    } catch {
+      toast.error("Failed to logout");
+    }
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -47,13 +58,30 @@ const OnboardingPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-base-100 flex items-center justify-center p-4 ">
-      <div className="card bg-base-200 w-full max-w-3xl shadow-xl">
-        <div className="card-body p-6 sm:p-8">
-          <h1 className="text-2xl sm:text-3xl font-bold text-center mb-6">
-            Complete your Profile
-          </h1>
-          <form onSubmit={handleSubmit} className="space-y-6">
+    <div className="min-h-screen bg-base-100 flex items-center justify-center p-4 py-12">
+      <div className="card bg-base-200 w-full max-w-2xl shadow-[0_20px_50px_rgba(0,0,0,0.2)] border border-white/10">
+        <div className="card-body p-8 sm:p-10 relative">
+          {/* Logout Button */}
+          <button
+            onClick={handleLogout}
+            className="absolute top-6 right-6 btn btn-ghost btn-sm text-error hover:bg-error/10 transition-all duration-300"
+            title="Logout"
+          >
+            <LogOut className="size-5 mr-2" />
+            Logout
+          </button>
+
+          <div className="flex flex-col items-center mb-10">
+            <div className="bg-primary/10 p-3 rounded-2xl mb-4">
+              <ShipWheelIcon className="size-10 text-primary" />
+            </div>
+            <h1 className="text-3xl sm:text-4xl font-bold text-center bg-clip-text bg-gradient-to-r from-primary to-primary-focus">
+              Complete your Profile
+            </h1>
+            <p className="opacity-70 mt-2 text-center">Let others know more about the real you</p>
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-8">
             {/* Profile Pic */}
             <div className="flex flex-col items-center justify-center space-y-4">
               {/* Image  */}
@@ -113,7 +141,7 @@ const OnboardingPage = () => {
                 placeholder="Tell us about Yourself"
               />
             </div>
-            
+
             {/* Location */}
             <div className="form-control">
               <label className="label">

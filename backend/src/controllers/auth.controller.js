@@ -33,6 +33,7 @@ export async function signup(req, res) {
       password,
       profilePic: randomAvatar,
     });
+    const safeUser = await User.findById(newUser._id).select("-password");
 
     // JWT Token
     const token = jwt.sign({ userId: newUser._id }, process.env.JWT_SECRET_KEY, {
@@ -47,7 +48,7 @@ export async function signup(req, res) {
       secure: process.env.NODE_ENV === "production", // only HTTPS
     });
 
-    res.status(201).json({ success: true, user: newUser });
+    res.status(201).json({ success: true, user: safeUser });
 
   } catch (error) {
     console.error("Signup Error:", error);
@@ -81,7 +82,10 @@ export async function login(req, res) {
       secure: process.env.NODE_ENV === "production",
     });
 
-    res.status(200).json({ success: true, user });
+    const safeUser = user.toObject();
+    delete safeUser.password;
+
+    res.status(200).json({ success: true, user: safeUser });
 
   } catch (error) {
     console.error("Login Error:", error);
@@ -103,7 +107,7 @@ export async function logout(req, res) {
 export async function onboard(req, res) {
   try {
     const userId = req.user._id;
-    const { fullName, bio, location } = req.body;
+    const { fullName, bio, location, profilePic } = req.body;
 
     if (!fullName || !bio || !location) {
       return res.status(400).json({
@@ -116,11 +120,21 @@ export async function onboard(req, res) {
       });
     }
 
-    const updatedUser = await User.findByIdAndUpdate(
-      userId,
-      { ...req.body, isOnboarded: true },
-      { new: true }
-    );
+    const updatePayload = {
+      fullName: String(fullName).trim(),
+      bio: String(bio).trim(),
+      location: String(location).trim(),
+      isOnboarded: true,
+    };
+
+    if (profilePic) {
+      updatePayload.profilePic = String(profilePic).trim();
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(userId, updatePayload, {
+      new: true,
+      runValidators: true,
+    });
 
     if (!updatedUser) return res.status(404).json({ message: "User not found" });
 

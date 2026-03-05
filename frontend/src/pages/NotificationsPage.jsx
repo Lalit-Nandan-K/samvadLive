@@ -7,6 +7,7 @@ import {
   UserCheckIcon,
 } from "lucide-react";
 import NoNotificationsFound from "../components/NoNotificationsFound";
+import toast from "react-hot-toast";
 
 const NotificationsPage = () => {
   const queryClient = useQueryClient();
@@ -21,6 +22,12 @@ const NotificationsPage = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["friendRequests"] });
       queryClient.invalidateQueries({ queryKey: ["friends"] });
+      queryClient.invalidateQueries({ queryKey: ["users"] });
+      queryClient.invalidateQueries({ queryKey: ["outgoingFriendReqs"] });
+      toast.success("Friend request accepted");
+    },
+    onError: (error) => {
+      toast.error(error?.response?.data?.message || "Failed to accept request");
     },
   });
 
@@ -67,14 +74,6 @@ const NotificationsPage = () => {
                               <h3 className="font-semibold">
                                 {request.sender.fullName}
                               </h3>
-                              <div className="flex flex-wrap gap-1.5 mt-1">
-                                <span className="badge badge-secondary badge-sm">
-                                  Native: {request.sender.nativeLanguage}
-                                </span>
-                                <span className="badge badge-outline badge-sm">
-                                  Learning:{request.sender.learningLanguage}
-                                </span>
-                              </div>
                             </div>
                           </div>
                           <button

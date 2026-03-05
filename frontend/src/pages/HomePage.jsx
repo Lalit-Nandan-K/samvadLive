@@ -13,6 +13,7 @@ import {
   UserIcon,
   UserPlusIcon,
 } from "lucide-react";
+import toast from "react-hot-toast";
 import Friendcard from "../components/Friendcard";
 import NoFriendsFound from "../components/NoFriendsFound";
 
@@ -37,8 +38,19 @@ const HomePage = () => {
 
   const { mutate: sendRequestMutation, isPending } = useMutation({
     mutationFn: sendFriendRequests,
-    onSuccess: () =>
-      queryClient.invalidateQueries({ queryKey: ["outgoingFriendReqs"] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["outgoingFriendReqs"] });
+      queryClient.invalidateQueries({ queryKey: ["users"] });
+      toast.success("Friend request sent");
+    },
+    onError: (error) => {
+      const message =
+        error?.response?.data?.message || "Unable to send friend request";
+      toast.error(message);
+      queryClient.invalidateQueries({ queryKey: ["outgoingFriendReqs"] });
+      queryClient.invalidateQueries({ queryKey: ["users"] });
+      queryClient.invalidateQueries({ queryKey: ["friends"] });
+    },
   });
 
   useEffect(() => {
@@ -47,14 +59,14 @@ const HomePage = () => {
       outgoingFriendReqs.forEach((req) => {
         outgoingIds.add(req.recipient._id);
       });
-      setOutgoingRequestsIds(outgoingIds);
     }
+    setOutgoingRequestsIds(outgoingIds);
   }, [outgoingFriendReqs]);
 
   return (
     <div className="min-h-screen bg-base-100 p-4 sm:p-6 lg:p-8">
       <div className="container mx-auto space-y-10">
-       
+
         <section>
           <div className="mb-6 sm:mb-8">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -69,7 +81,7 @@ const HomePage = () => {
             </div>
           </div>
           {loadingUsers ? (
-            <div className="flx justify-center py-12">
+            <div className="flex justify-center py-12">
               <span className="loading loading-spinner loading-lg" />
             </div>
           ) : recommendedUsers.length === 0 ? (
@@ -110,16 +122,15 @@ const HomePage = () => {
                           )}
                         </div>
                       </div>
-                      
+
                       {/* Bio */}
                       {user.bio && (
                         <p className="text-sm opacity-70">{user.bio}</p>
                       )}
                       {/* Button */}
                       <button
-                        className={`btn w-full mt-2 ${
-                          hasRequestBeenSent ? "btn-disabled" : "btn-primary"
-                        }`}
+                        className={`btn w-full mt-2 ${hasRequestBeenSent ? "btn-disabled" : "btn-primary"
+                          }`}
                         onClick={() => sendRequestMutation(user._id)}
                         disabled={hasRequestBeenSent || isPending}
                       >
@@ -142,7 +153,7 @@ const HomePage = () => {
             </div>
           )}
         </section>
-         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">
             Your Friends
           </h2>
@@ -170,5 +181,3 @@ const HomePage = () => {
 };
 
 export default HomePage;
-
-const capitialize = (str) => str.charAt(0).toUpperCase() + str.slice(1);
